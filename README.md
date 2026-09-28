@@ -120,7 +120,11 @@ This is a prototype for development and evaluation, not a certified driver-safet
 - Mobile-to-backend integration
 - Modular Python code
 
-## Author
+## Attribution
+
+This repository is a fork of [priyadharshiniep05/NoNap](https://github.com/priyadharshiniep05/NoNap). See the upstream project for original authorship and history. Changes in this fork include documentation and development setup improvements, a FastAPI WebSocket entry point, and support for the Expo client's base64 frame messages.
+
+## Maintainer
 
 **Nikhil Kumar PE**
 
