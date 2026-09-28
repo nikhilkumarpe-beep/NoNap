@@ -1,116 +1,127 @@
 # NoNap
 
-A real-time driver drowsiness detection system combining a mobile interface, computer-vision inference, and a web presentation layer.
+NoNap is a driver-drowsiness detection prototype with an Expo / React Native client and a Python computer-vision backend.
 
-**Stack:** React Native / Expo · Python · YOLOv8 · Vision Transformer (ViT) · Next.js
+**Stack:** Python · FastAPI · OpenCV · YOLO · dlib · EAR/MAR · React Native · Expo · TypeScript
 
-## Project overview
+## What is implemented
 
-NoNap is designed to detect signs of driver fatigue from camera input and provide timely feedback through a connected application.
+- WebSocket endpoint for receiving JPEG camera frames
+- YOLO face detection and dlib 68-point facial landmarks
+- Eye Aspect Ratio (EAR) and Mouth Aspect Ratio (MAR) calculations
+- CLAHE preprocessing for low-light frames
+- A hysteresis state machine to reduce rapid alert-state changes
+- A React Native / Expo interface with personal and fleet-oriented screens
+- A health endpoint that reports whether the face detector initialized
 
-The repository is organized as a multi-component system:
+## Architecture
 
 ```text
-Camera / Video
-      │
-      ▼
-Python inference backend
-      │
-      ├── YOLOv8
-      └── Vision Transformer (ViT)
-      │
-      ▼
-Drowsiness result
-      │
-      ▼
-React Native / Expo application
-
-Next.js website
-      └── Project presentation and information
+Camera frame
+    │ JPEG over WebSocket
+    ▼
+FastAPI backend (/detection)
+    ├── CLAHE preprocessing
+    ├── YOLO face detection
+    ├── dlib facial landmarks
+    ├── EAR / MAR features
+    └── Hysteresis state classification
+    │
+    ▼
+JSON detection result
+    │
+    ▼
+Expo / React Native client
 ```
 
-## Repository structure
+## Repository layout
 
-- `app/` — React Native / Expo mobile application
-- `backend/` — Python inference service
-- `website/` — Next.js project website
-- `docs/` — project documentation
-- `scripts/` — development setup and launch helpers
+```text
+NoNap/
+├── app/                 # Expo / React Native client
+├── backend/
+│   ├── main.py          # FastAPI and WebSocket entry point
+│   ├── webcam_server.py # Local webcam preview client
+│   ├── pipeline/        # Detection and fatigue feature modules
+│   └── requirements.txt
+└── scripts/
+    └── setup.sh
+```
 
-## Key capabilities
+## Requirements
 
-- Real-time camera-oriented drowsiness detection workflow
-- YOLOv8-based visual detection
-- Vision Transformer-based analysis
-- Python inference service
-- React Native / Expo mobile interface
-- Next.js web presentation
-- Modular separation between UI and inference components
+- Python 3.11 recommended
+- Node.js and npm
+- A working webcam/camera source for live testing
+- Model files described below
 
-## Backend
+The backend dependencies include PyTorch, OpenCV, Ultralytics, dlib and SciPy. Installation can take time and may require platform-specific build tools, especially for dlib.
 
-The inference service uses Python and includes:
+## Setup
 
-- FastAPI
-- Uvicorn
-- OpenCV
-- PyTorch
-- Ultralytics YOLO
-- ONNX Runtime
-- NumPy / SciPy
-- dlib
-- python-dotenv
-
-Install backend dependencies from `backend/requirements.txt`.
-
-## Mobile application
-
-The mobile client uses Expo and React Native with camera, navigation, notifications, gesture, animation, and visualization libraries.
-
-From the `app/` directory:
+Run from the repository root on macOS or Linux:
 
 ```bash
-npm install
+bash scripts/setup.sh
+```
+
+The script installs backend dependencies, downloads the dlib landmark predictor, and installs the app dependencies using the committed lockfile.
+
+If setup fails on your platform, follow the steps manually.
+
+### Start the backend
+
+```bash
+cd backend
+.venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8765
+```
+
+Check health at `http://127.0.0.1:8765/health`.
+
+### Start the mobile app
+
+In a second terminal:
+
+```bash
+cd app
 npm start
 ```
 
-Then choose the required Expo target.
+Use the Expo CLI to open the app on a supported simulator or device. A physical device must be able to reach the backend host; `localhost` on a phone refers to the phone itself.
 
-## Development setup
+### Local webcam preview
 
-The repository includes setup scripts, but they assume a Unix-like development environment. For a manual and portable setup:
+The optional webcam preview client connects to the backend over WebSocket. Run it on a machine with a webcam and OpenCV GUI support:
 
-```text
-1. Create the Python environment in backend/
-2. Install backend/requirements.txt
-3. Install the app dependencies in app/
-4. Install the website dependencies in website/ when its package manifest is present
-5. Start each component independently
+```bash
+cd backend
+.venv/bin/python webcam_server.py
 ```
 
-The application requires the model files and runtime configuration expected by the backend. Keep credentials and machine-specific configuration outside the repository.
+## Model limitations
 
-## Engineering focus
+**The current repository does not include trained Vision Transformer weights.** The `ViTAnalyzer` currently uses an EAR/MAR-based fallback score; it is not performing real ViT inference. The backend also requires the YOLO face model file and the dlib landmark predictor to initialize face detection. The health endpoint reports detector initialization status.
 
-NoNap demonstrates work across:
+This is a prototype for development and evaluation, not a certified driver-safety device. Do not rely on it as the sole means of preventing accidents.
 
-- Computer vision
-- Deep learning inference
-- Real-time application architecture
-- REST / WebSocket-oriented backend services
-- Mobile development
-- Frontend development
-- Model integration
-- Modular project organization
+## Configuration and generated files
 
-## Status
+- Keep credentials and local configuration out of Git.
+- Model files and downloaded weights should be treated as setup assets.
+- Runtime logs, Python bytecode, virtual environments, and `node_modules` are excluded from version control.
 
-Active academic project focused on building and evaluating a practical driver-drowsiness detection pipeline.
+## Engineering concepts
 
-## Author / Repository
+- Real-time image processing
+- WebSocket communication
+- Face detection and facial landmarks
+- EAR/MAR feature engineering
+- Temporal smoothing / hysteresis
+- Mobile-to-backend integration
+- Modular Python code
+
+## Author
 
 **Nikhil Kumar PE**
 
-[GitHub](https://github.com/nikhilkumarpe-beep)
-
-[Repository](https://github.com/nikhilkumarpe-beep/NoNap)
+[GitHub profile](https://github.com/nikhilkumarpe-beep)
