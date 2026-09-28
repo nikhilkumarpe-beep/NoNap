@@ -87,7 +87,7 @@ cd app
 npm start
 ```
 
-Use the Expo CLI to open the app on a supported simulator or device. A physical device must be able to reach the backend host; `localhost` on a phone refers to the phone itself.
+Use the Expo CLI to open the app on a supported simulator or device. A physical device must be able to reach the backend host; `localhost` on a phone refers to the phone itself. For a physical device, set `EXPO_PUBLIC_BACKEND_HOST` to your computer's LAN IP before starting Expo, for example `EXPO_PUBLIC_BACKEND_HOST=192.168.1.20 npm start` (replace the example IP with your computer's address).
 
 ### Local webcam preview
 
