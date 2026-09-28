@@ -5,7 +5,7 @@ interface DetectionState {
   ear: number;
   mar: number;
   fatigue_prob: number;
-  state: 'ALERT' | 'CAUTION' | 'DROWSY';
+  state: 'ALERT' | 'CAUTION' | 'DROWSY' | 'UNKNOWN';
   blink_count: number;
   yawn_count: number;
   fps: number;
@@ -35,11 +35,9 @@ export const useDetectionStore = create<DetectionState>((set) => ({
   },
 }));
 
-// CONFIGURATION: Replace with your computer's local IP address
-// You can find it by running `ipconfig getifaddr en0` on your Mac Terminal
-// If using an emulator, you can use 'localhost' or '10.0.2.2' (Android)
-const LOCAL_IP = 'localhost'; 
-const WS_URL = `ws://${LOCAL_IP}:8765/detection`; 
+// Set EXPO_PUBLIC_BACKEND_HOST to the computer's LAN IP when using a physical device.
+const BACKEND_HOST = process.env.EXPO_PUBLIC_BACKEND_HOST || 'localhost';
+const WS_URL = `ws://${BACKEND_HOST}:8765/detection`; 
 
 console.log('Connecting to WebSocket at:', WS_URL);
 
