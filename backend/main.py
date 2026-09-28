@@ -57,6 +57,8 @@ async def detection_socket(websocket: WebSocket):
     try:
         while True:
             message = await websocket.receive()
+            if message.get("type") == "websocket.disconnect":
+                break
             if message.get("bytes") is not None:
                 frame_bytes = message["bytes"]
             elif message.get("text") is not None:
