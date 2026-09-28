@@ -2,9 +2,10 @@
 
 Run from the backend directory with: python -m uvicorn main:app --host 0.0.0.0 --port 8765
 """
+import base64
+import json
 import logging
 import time
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -55,7 +56,20 @@ async def detection_socket(websocket: WebSocket):
 
     try:
         while True:
-            frame_bytes = await websocket.receive_bytes()
+            message = await websocket.receive()
+            if message.get("bytes") is not None:
+                frame_bytes = message["bytes"]
+            elif message.get("text") is not None:
+                # The Expo client currently sends {"frame": "<base64>"} as JSON.
+                try:
+                    payload_in = json.loads(message["text"])
+                    frame_bytes = base64.b64decode(payload_in["frame"], validate=True)
+                except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                    await websocket.send_json({"state": "UNKNOWN", "error": "Expected JPEG bytes or JSON with a base64 frame"})
+                    continue
+            else:
+                continue
+
             encoded = np.frombuffer(frame_bytes, dtype=np.uint8)
             frame = cv2.imdecode(encoded, cv2.IMREAD_COLOR)
             if frame is None:
